@@ -2,313 +2,307 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <title>Правильное дыхание</title>
+<meta charset="UTF-8">
+<title>Правильное дыхание</title>
 
-  <style>
-    body {
-      margin: 0;
-      background: black;
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      overflow: hidden;
-    }
+<style>
+body {
+  margin: 0;
+  background: black;
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+}
 
-    /* ВИДЕО */
-    #bg-video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: -2;
-      filter: blur(3px);
-      opacity: 0.6;
-    }
+/* видео */
+#bg-video {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -2;
+  filter: blur(3px);
+  opacity: 0.6;
+}
 
-    body::before {
-      content: "";
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      background: rgba(15,27,45,0.7);
-      z-index: -1;
-    }
+body::before {
+  content: "";
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  background: rgba(15,27,45,0.7);
+  z-index: -1;
+}
 
-    .container {
-      text-align: center;
-      width: 100%;
-      max-width: 360px;
-    }
+/* контейнер */
+.container {
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+}
 
-    h1 {
-      color: #a8c5e8;
-      font-size: 22px;
-      margin-bottom: 12px;
-      font-weight: 400;
-    }
+/* цикл (теперь сверху и заметный) */
+.cycle-counter {
+  color: #ffffff;
+  font-size: 18px;
+  margin-bottom: 10px;
+  opacity: 0.9;
+}
 
-    /* РЕЖИМЫ */
-    .mode-buttons {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
+/* режимы */
+.mode-buttons {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
 
-    .mode-buttons button {
-      flex: 1;
-      padding: 10px;
-      border-radius: 20px;
-      border: 1px solid #4a90d9;
-      background: transparent;
-      color: #a8c5e8;
-      cursor: pointer;
-      transition: 0.3s;
-    }
+.mode-buttons button {
+  flex: 1;
+  padding: 10px;
+  border-radius: 20px;
+  border: 1px solid #4a90d9;
+  background: transparent;
+  color: #a8c5e8;
+  cursor: pointer;
+}
 
-    .mode-buttons button.active {
-      background: #4a90d9;
-      color: white;
-    }
+.mode-buttons button.active {
+  background: #4a90d9;
+  color: white;
+}
 
-    .controls-row {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 16px;
-    }
+/* круг */
+.circle {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: #1a3a5c;
+  border: 3px solid #4a90d9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 24px;
+  transition: transform 4s ease-in-out;
+}
 
-    .cycle-counter {
-      color: #4a90d9;
-      font-size: 14px;
-    }
+.countdown {
+  color: white;
+  font-size: 52px;
+}
 
-    .circle {
-      width: 200px;
-      height: 200px;
-      border-radius: 50%;
-      background: #1a3a5c;
-      border: 3px solid #4a90d9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin: 0 auto 24px;
-      transition: transform 4s ease-in-out;
-    }
+.phase-text {
+  color: #a8c5e8;
+}
 
-    .countdown {
-      color: white;
-      font-size: 52px;
-    }
+/* кнопка */
+.start-btn {
+  background: #4a90d9;
+  color: white;
+  border: none;
+  padding: 14px 40px;
+  border-radius: 30px;
+  font-size: 17px;
+  cursor: pointer;
+}
 
-    .phase-text {
-      color: #a8c5e8;
-      font-size: 15px;
-    }
+/* музыка */
+#music-fab {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #4a90d9;
+  color: white;
+  font-size: 24px;
+  border: none;
+}
 
-    .progress-wrap {
-      width: 100%;
-      height: 6px;
-      background: #1a3a5c;
-      border-radius: 3px;
-      margin-bottom: 20px;
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: #4a90d9;
-    }
-
-    .start-btn {
-      background: #4a90d9;
-      color: white;
-      border: none;
-      padding: 14px 40px;
-      border-radius: 30px;
-      font-size: 17px;
-      cursor: pointer;
-    }
-
-    /* КНОПКА МУЗЫКИ */
-    #music-fab {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: #4a90d9;
-      color: white;
-      font-size: 24px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-      z-index: 10;
-    }
-
-    #music-fab.off {
-      background: #555;
-    }
-  </style>
+#music-fab.off {
+  background: #555;
+}
+</style>
 </head>
 
 <body>
 
-  <video autoplay muted loop id="bg-video">
-    <source src="bg.mp4" type="video/mp4">
-  </video>
+<video autoplay muted loop id="bg-video">
+  <source src="bg.mp4" type="video/mp4">
+</video>
 
-  <div class="container">
-    <h1>Правильное дыхание</h1>
+<div class="container">
 
-    <div class="mode-buttons">
-      <button data-mode="478">😴 4-7-8</button>
-      <button data-mode="box" class="active">🧘 Box</button>
-      <button data-mode="classic">🌿 Классика</button>
-    </div>
+  <div class="cycle-counter" id="cycle-counter">ЦИКЛ: 0</div>
 
-    <div class="controls-row">
-      <div class="cycle-counter" id="cycle-counter">Цикл: 0</div>
-    </div>
-
-    <div class="circle" id="circle">
-      <div>
-        <div class="countdown" id="countdown">4</div>
-        <div class="phase-text" id="phase-text">Вдох</div>
-      </div>
-    </div>
-
-    <div class="progress-wrap">
-      <div class="progress-bar" id="progress-bar"></div>
-    </div>
-
-    <button class="start-btn" id="start-btn">Начать</button>
+  <div class="mode-buttons">
+    <button data-mode="478">😴 4-7-8</button>
+    <button data-mode="box" class="active">🧘 Box</button>
+    <button data-mode="classic">🌿 Классика</button>
   </div>
 
-  <button id="music-fab" class="off">🎧</button>
+  <div class="circle" id="circle">
+    <div>
+      <div class="countdown" id="countdown">4</div>
+      <div class="phase-text" id="phase-text">Вдох</div>
+    </div>
+  </div>
 
-  <script>
-    const circle = document.getElementById('circle');
-    const phaseText = document.getElementById('phase-text');
-    const countdown = document.getElementById('countdown');
-    const btn = document.getElementById('start-btn');
-    const cycleCounter = document.getElementById('cycle-counter');
-    const progressBar = document.getElementById('progress-bar');
+  <button class="start-btn" id="start-btn">Начать</button>
+</div>
 
-    // режимы
-    let currentMode = 'box';
-    const modeButtons = document.querySelectorAll('.mode-buttons button');
+<button id="music-fab" class="off">🎧</button>
 
-    modeButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentMode = btn.dataset.mode;
+<script>
+// элементы
+const circle = document.getElementById('circle');
+const countdown = document.getElementById('countdown');
+const phaseText = document.getElementById('phase-text');
+const btn = document.getElementById('start-btn');
+const cycleCounter = document.getElementById('cycle-counter');
 
-        modeButtons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+// режимы
+let currentMode = 'box';
+const modeButtons = document.querySelectorAll('.mode-buttons button');
 
-        if (timer) reset();
-      });
-    });
+modeButtons.forEach(b => {
+  b.addEventListener('click', () => {
+    currentMode = b.dataset.mode;
+    modeButtons.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    if (timer) reset();
+  });
+});
 
-    const techniques = {
-      '478': [
-        { name: 'Вдох', duration: 4 },
-        { name: 'Задержка', duration: 7 },
-        { name: 'Выдох', duration: 8 },
-      ],
-      'box': [
-        { name: 'Вдох', duration: 4 },
-        { name: 'Задержка', duration: 4 },
-        { name: 'Выдох', duration: 4 },
-        { name: 'Пауза', duration: 4 },
-      ],
-      'classic': [
-        { name: 'Вдох', duration: 4 },
-        { name: 'Задержка', duration: 4 },
-        { name: 'Выдох', duration: 6 },
-      ],
-    };
+// техники
+const techniques = {
+  '478': [
+    { name: 'Вдох', duration: 4 },
+    { name: 'Задержка', duration: 7 },
+    { name: 'Выдох', duration: 8 },
+  ],
+  'box': [
+    { name: 'Вдох', duration: 4 },
+    { name: 'Задержка', duration: 4 },
+    { name: 'Выдох', duration: 4 },
+    { name: 'Пауза', duration: 4 },
+  ],
+  'classic': [
+    { name: 'Вдох', duration: 4 },
+    { name: 'Задержка', duration: 4 },
+    { name: 'Выдох', duration: 6 },
+  ],
+};
 
-    function getPhases() {
-      return techniques[currentMode];
+function getPhases() {
+  return techniques[currentMode];
+}
+
+// звук
+let audioCtx;
+function tone(freq, dur) {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  o.start();
+  o.stop(audioCtx.currentTime + dur);
+}
+
+function playSound(name) {
+  if (name === 'Вдох') tone(528, 0.3);
+  if (name === 'Выдох') tone(264, 0.5);
+  if (name === 'Задержка') tone(396, 0.3);
+  if (name === 'Пауза') tone(396, 0.3);
+}
+
+// логика
+let currentPhase = 0;
+let timer = null;
+let countdownTimer = null;
+let cycle = 0;
+
+function startCountdown(sec) {
+  let t = sec;
+  countdown.textContent = t;
+  countdownTimer = setInterval(() => {
+    t--;
+    countdown.textContent = t;
+    if (t <= 0) clearInterval(countdownTimer);
+  }, 1000);
+}
+
+function nextPhase() {
+  const phase = getPhases()[currentPhase];
+
+  phaseText.textContent = phase.name;
+  playSound(phase.name);
+
+  if (phase.name === 'Вдох') {
+    circle.style.transform = 'scale(1.4)';
+  } else {
+    circle.style.transform = 'scale(1)';
+  }
+
+  startCountdown(phase.duration);
+
+  timer = setTimeout(() => {
+    currentPhase = (currentPhase + 1) % getPhases().length;
+
+    if (currentPhase === 0) {
+      cycle++;
+      cycleCounter.textContent = `ЦИКЛ: ${cycle}`;
     }
 
-    let currentPhase = 0, cycleCount = 0, timer = null;
+    nextPhase();
+  }, phase.duration * 1000);
+}
 
-    function nextPhase() {
-      const phases = getPhases();
-      const phase = phases[currentPhase];
+function reset() {
+  clearTimeout(timer);
+  clearInterval(countdownTimer);
+  timer = null;
+  currentPhase = 0;
+  cycle = 0;
+  cycleCounter.textContent = 'ЦИКЛ: 0';
+  btn.textContent = 'Начать';
+}
 
-      phaseText.textContent = phase.name;
-      countdown.textContent = phase.duration;
+// старт
+btn.addEventListener('click', () => {
+  if (timer) {
+    reset();
+  } else {
+    btn.textContent = 'Стоп';
+    nextPhase();
+  }
+});
 
-      if (phase.name === 'Вдох') {
-        circle.style.transform = 'scale(1.4)';
-      } else {
-        circle.style.transform = 'scale(1)';
-      }
+// музыка
+const music = new Audio('music.mp3');
+music.loop = true;
+music.volume = 0.3;
+let musicEnabled = false;
 
-      timer = setTimeout(() => {
-        currentPhase = (currentPhase + 1) % phases.length;
-        if (currentPhase === 0) {
-          cycleCount++;
-          cycleCounter.textContent = `Цикл: ${cycleCount}`;
-        }
-        nextPhase();
-      }, phase.duration * 1000);
-    }
+const musicBtn = document.getElementById('music-fab');
 
-    function reset() {
-      clearTimeout(timer);
-      timer = null;
-      currentPhase = 0;
-      cycleCount = 0;
-      cycleCounter.textContent = 'Цикл: 0';
-      btn.textContent = 'Начать';
-      circle.style.transform = 'scale(1)';
-      stopMusic();
-    }
-
-    btn.addEventListener('click', () => {
-      if (timer) {
-        reset();
-      } else {
-        btn.textContent = 'Стоп';
-        nextPhase();
-      }
-    });
-
-    // МУЗЫКА
-    const music = new Audio('music.mp3');
-    music.loop = true;
-    music.volume = 0.3;
-    let musicEnabled = false;
-
-    const musicToggle = document.getElementById('music-fab');
-
-    musicToggle.addEventListener('click', () => {
-      musicEnabled = !musicEnabled;
-
-      if (musicEnabled) {
-        music.play();
-        musicToggle.classList.remove('off');
-      } else {
-        music.pause();
-        musicToggle.classList.add('off');
-      }
-    });
-
-    function stopMusic() {
-      music.pause();
-      music.currentTime = 0;
-      musicEnabled = false;
-      musicToggle.classList.add('off');
-    }
-  </script>
+musicBtn.onclick = () => {
+  musicEnabled = !musicEnabled;
+  if (musicEnabled) {
+    music.play();
+    musicBtn.classList.remove('off');
+  } else {
+    music.pause();
+    musicBtn.classList.add('off');
+  }
+};
+</script>
 
 </body>
 </html>
