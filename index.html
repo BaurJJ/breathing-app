@@ -1,0 +1,399 @@
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Правильное дыхание</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ВИДЕО ФОН */
+    #bg-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -2;
+      filter: blur(3px);
+      opacity: 0.6;
+    }
+
+    /* затемнение */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 27, 45, 0.7);
+      z-index: -1;
+    }
+
+    .container {
+      text-align: center;
+      width: 100%;
+      max-width: 360px;
+    }
+
+    h1 {
+      color: #a8c5e8;
+      font-size: 22px;
+      margin: 0 0 16px;
+      font-weight: 400;
+    }
+
+    .technique-select {
+      background: #1a3a5c;
+      color: #a8c5e8;
+      border: 1px solid #4a90d9;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .controls-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .cycle-counter {
+      color: #4a90d9;
+      font-size: 14px;
+    }
+
+    .sound-toggle {
+      background: none;
+      border: 1px solid #4a90d9;
+      color: #4a90d9;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .sound-toggle.muted {
+      border-color: #555;
+      color: #555;
+    }
+
+    .circle {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: #1a3a5c;
+      border: 3px solid #4a90d9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 24px;
+      transition: transform 4s ease-in-out;
+    }
+
+    .circle-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .countdown {
+      color: #ffffff;
+      font-size: 52px;
+      font-weight: 200;
+      line-height: 1;
+    }
+
+    .phase-text {
+      color: #a8c5e8;
+      font-size: 15px;
+      margin-top: 6px;
+    }
+
+    .progress-wrap {
+      width: 100%;
+      height: 6px;
+      background: #1a3a5c;
+      border-radius: 3px;
+      margin: 0 0 28px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      border-radius: 3px;
+      background: #4a90d9;
+      transition: background 0.4s;
+    }
+
+    .start-btn {
+      background: #4a90d9;
+      color: white;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 30px;
+      font-size: 17px;
+      cursor: pointer;
+    }
+
+    .start-btn:hover {
+      background: #5aa0e8;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ВИДЕО -->
+  <video autoplay muted loop id="bg-video">
+    <source src="bg.mp4" type="video/mp4">
+  </video>
+
+  <div class="container">
+    <h1>Правильное дыхание</h1>
+
+    <select class="technique-select" id="technique">
+      <option value="478">4-7-8 (успокоение)</option>
+      <option value="box" selected>Box breathing (4-4-4-4)</option>
+      <option value="classic">Классика (4-4-6)</option>
+    </select>
+
+    <div class="controls-row">
+      <div class="cycle-counter" id="cycle-counter">Цикл: 0</div>
+      <button class="sound-toggle" id="sound-toggle">звук вкл</button>
+      <button class="sound-toggle muted" id="music-toggle">музыка выкл</button>
+    </div>
+
+    <div class="circle" id="circle">
+      <div class="circle-content">
+        <span class="countdown" id="countdown">4</span>
+        <span class="phase-text" id="phase-text">Вдох</span>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <button class="start-btn" id="start-btn">Начать</button>
+  </div>
+
+  <script>
+    const circle = document.getElementById('circle');
+    const phaseText = document.getElementById('phase-text');
+    const countdown = document.getElementById('countdown');
+    const btn = document.getElementById('start-btn');
+    const techniqueSelect = document.getElementById('technique');
+    const cycleCounter = document.getElementById('cycle-counter');
+    const soundToggle = document.getElementById('sound-toggle');
+    const musicToggle = document.getElementById('music-toggle');
+    const progressBar = document.getElementById('progress-bar');
+
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function getAudioCtx() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      return audioCtx;
+    }
+
+    function playTone(freq, duration, type = 'sine') {
+      if (!soundEnabled) return;
+      const ctx = getAudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + 0.05);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration);
+    }
+
+    function playInhale() { playTone(528, 0.4); }
+    function playHold() { playTone(396, 0.3, 'triangle'); }
+    function playExhale() { playTone(264, 0.6); }
+
+    soundToggle.addEventListener('click', () => {
+      soundEnabled = !soundEnabled;
+      soundToggle.textContent = soundEnabled ? 'звук вкл' : 'звук выкл';
+      soundToggle.classList.toggle('muted', !soundEnabled);
+    });
+
+    const music = new Audio('music.mp3');
+    music.loop = true;
+    music.volume = 0.3;
+    let musicEnabled = false;
+
+    musicToggle.addEventListener('click', () => {
+      musicEnabled = !musicEnabled;
+      if (musicEnabled) {
+        music.play();
+        musicToggle.textContent = 'музыка вкл';
+        musicToggle.classList.remove('muted');
+      } else {
+        music.pause();
+        musicToggle.textContent = 'музыка выкл';
+        musicToggle.classList.add('muted');
+      }
+    });
+
+    function stopMusic() {
+      music.pause();
+      music.currentTime = 0;
+      musicEnabled = false;
+      musicToggle.textContent = 'музыка выкл';
+      musicToggle.classList.add('muted');
+    }
+
+    const phaseColors = {
+      'Вдох': '#4a90d9',
+      'Задержка': '#9b7fd4',
+      'Выдох': '#4abfa8',
+      'Пауза': '#9b7fd4',
+    };
+
+    let rafId = null;
+    let phaseStart = null;
+    let phaseDuration = 0;
+
+    function animateProgress(timestamp) {
+      if (!phaseStart) phaseStart = timestamp;
+      const elapsed = timestamp - phaseStart;
+      const clamped = Math.min(elapsed / phaseDuration, 1);
+      progressBar.style.width = (clamped * 100) + '%';
+      if (clamped < 1) rafId = requestAnimationFrame(animateProgress);
+    }
+
+    function startProgress(durationSeconds, phaseName) {
+      cancelAnimationFrame(rafId);
+      progressBar.style.width = '0%';
+      progressBar.style.background = phaseColors[phaseName] || '#4a90d9';
+      phaseStart = null;
+      phaseDuration = durationSeconds * 1000;
+      rafId = requestAnimationFrame(animateProgress);
+    }
+
+    const techniques = {
+      '478': [
+        { name: 'Вдох', duration: 4 },
+        { name: 'Задержка', duration: 7 },
+        { name: 'Выдох', duration: 8 },
+      ],
+      'box': [
+        { name: 'Вдох', duration: 4 },
+        { name: 'Задержка', duration: 4 },
+        { name: 'Выдох', duration: 4 },
+        { name: 'Пауза', duration: 4 },
+      ],
+      'classic': [
+        { name: 'Вдох', duration: 4 },
+        { name: 'Задержка', duration: 4 },
+        { name: 'Выдох', duration: 6 },
+      ],
+    };
+
+    let currentPhase = 0, cycleCount = 0, timer = null, countdownTimer = null;
+
+    function getPhases() {
+      return techniques[techniqueSelect.value];
+    }
+
+    function startCountdown(seconds) {
+      let remaining = seconds;
+      countdown.textContent = remaining;
+      countdownTimer = setInterval(() => {
+        remaining -= 1;
+        countdown.textContent = remaining;
+        if (remaining <= 0) clearInterval(countdownTimer);
+      }, 1000);
+    }
+
+    function nextPhase() {
+      const phases = getPhases();
+      const phase = phases[currentPhase];
+      phaseText.textContent = phase.name;
+
+      if (phase.name === 'Вдох') {
+        playInhale();
+        circle.style.transition = `transform ${phase.duration}s ease-in-out`;
+        circle.style.transform = 'scale(1.4)';
+      } else if (phase.name === 'Выдох' || phase.name === 'Пауза') {
+        playExhale();
+        circle.style.transition = `transform ${phase.duration}s ease-in-out`;
+        circle.style.transform = 'scale(1)';
+      } else {
+        playHold();
+      }
+
+      startCountdown(phase.duration);
+      startProgress(phase.duration, phase.name);
+
+      timer = setTimeout(() => {
+        currentPhase = (currentPhase + 1) % phases.length;
+        if (currentPhase === 0) {
+          cycleCount++;
+          cycleCounter.textContent = `Цикл: ${cycleCount}`;
+        }
+        nextPhase();
+      }, phase.duration * 1000);
+    }
+
+    function reset() {
+      clearTimeout(timer);
+      clearInterval(countdownTimer);
+      cancelAnimationFrame(rafId);
+      timer = null;
+      countdownTimer = null;
+      rafId = null;
+      currentPhase = 0;
+      cycleCount = 0;
+      cycleCounter.textContent = 'Цикл: 0';
+      phaseText.textContent = 'Вдох';
+      countdown.textContent = '4';
+      btn.textContent = 'Начать';
+      circle.style.transition = 'transform 1s ease-in-out';
+      circle.style.transform = 'scale(1)';
+      progressBar.style.width = '0%';
+      stopMusic();
+    }
+
+    btn.addEventListener('click', () => {
+      if (timer) {
+        reset();
+      } else {
+        btn.textContent = 'Стоп';
+        nextPhase();
+      }
+    });
+
+    techniqueSelect.addEventListener('change', () => {
+      if (timer) reset();
+    });
+  </script>
+
+</body>
+</html>
+```
